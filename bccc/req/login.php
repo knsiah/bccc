@@ -1,12 +1,14 @@
 <?php
 session_start(); // Start session if not already started
 
+$result = "";
+
 if (
     isset($_POST['uname']) &&
     isset($_POST['pass']) &&
     isset($_POST['role'])
 ) {
-    include('/DB_connection.php');
+    include('DB_connection.php');
 
     $uname = $_POST['uname'];
     $pass = $_POST['pass'];
@@ -27,45 +29,56 @@ if (
     } else {
 
         if ($role == '1') {
-            $sql = "SELECT * FROM 'admin' WHERE username = ?";
-            $role = "admin";
+            $result = mysqli_query($db, "SELECT * FROM admin WHERE username = '$uname'");
+            $role = "Admin";
         } else if ($role == '2') {
-            $sql = "SELECT * FROM 'teachers' WHERE username = ?";
+            $result = mysqli_query($db, "SELECT * FROM teachers WHERE username = '$uname'");
             $role = "Teacher";
         } else {
-            $sql = "SELECT * FROM 'students' WHERE username = ?";
+            $result = mysqli_query($db, "SELECT * FROM students WHERE username = '$uname'");
             $role = "Student";
         }
 
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $uname); // Bind parameter to the query
-        $stmt->execute();
-        $result = $stmt->get_result();
 
-        if ($result->num_rows == 1) {
-            $user = $result->fetch_assoc();
-            $username = $user['username'];
-            $password = $user['password'];
-            $fname = $user['fname']; // Assuming you fetch 'fname' from the database
-            $id = $user['id'];
 
-            if (password_verify($pass, $password)) {
-                $_SESSION['id'] = $id;
-                $_SESSION['fname'] = $fname;
-                $_SESSION['role'] = $role;
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            if ($row = mysqli_fetch_assoc($result)) {
 
-                header("Location: ../home.php");
-                exit;
-            } else {
-                $em = "Incorrect Password";
-                header("Location: ../login.php?error=$em");
-                exit;
+                
+                $username = $row['username'];
+                $password = $row['password'];
+
+                $fname = $row['fname']; // Assuming you fetch 'fname' from the database
+                $id = $row['admin_id'];
+
+                if ($pass == $password){
+                    $_SESSION['id'] = $id;
+                    $_SESSION['fname'] = $fname;
+                    $_SESSION['role'] = $role;
+
+                    header("Location: home.php");
+                    exit;
+                } else {
+                    $em = "Incorrect Password";
+                    header("Location: ../login.php?error=$em");
+                    exit;
+                }
+            
             }
         } else {
             $em = "User not found";
             header("Location: ../login.php?error=$em");
-            exit;
-        }
+            exit;        }
+
+
+       // $stmt->execute();
+
+        $result = $conn->query($sql);
+        //$result = $stmt->fetch();
+
+
+
     }
 } else {
     header("Location: ../login.php");
