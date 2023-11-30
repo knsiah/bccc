@@ -19,6 +19,7 @@ if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
   <b>
     <?php
       if ($_SESSION['role'] == 'Admin') {
+        echo "Admin";
 
       }else if ($_SESSION['role'] == 'Teacher') {
         echo "Teacher";
@@ -27,7 +28,7 @@ if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
       }
     ?>
   </b><br>
-  <h3 class="display-4">< <?=$_SESSION['fname']?></h3>
+  <h3 class="display-4"> <?=$_SESSION['fname']?></h3>
   <a href="logout.php" class="btn btn-warning">
     Logout
   </a>
